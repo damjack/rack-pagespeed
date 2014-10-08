@@ -36,6 +36,7 @@ Gem::Specification.new do |s|
     "lib/rack/pagespeed/store/disk.rb",
     "lib/rack/pagespeed/store/memcached.rb",
     "lib/rack/pagespeed/store/redis.rb",
+    "rake-pagespeed-fork.gemspec",
     "spec/config_spec.rb",
     "spec/filters/combine_css_spec.rb",
     "spec/filters/combine_javascripts_spec.rb",
