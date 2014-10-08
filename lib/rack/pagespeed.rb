@@ -35,6 +35,7 @@ module Rack
         [
           200,
           {
+            'Content-Length' => asset.length,
             'Content-Type' => (Rack::Mime.mime_type(::File.extname(asset_id))),
             'Cache-Control' => "public, max-age=#{(60*60*24*365.25*10).to_i}",
             'Expires' => (Time.now + 60*60*24*365.25*10).httpdate
