@@ -14,8 +14,8 @@ require 'rake'
 require 'jeweler'
 Jeweler::Tasks.new do |gem|
   # gem is a Gem::Specification... see http://guides.rubygems.org/specification-reference/ for more options
-  gem.name = "rake-pagespeed-fork"
-  gem.homepage = "http://github.com/wjordan/rake-pagespeed"
+  gem.name = "rack-pagespeed-fork"
+  gem.homepage = "http://github.com/wjordan/rack-pagespeed"
   gem.license = "MIT"
   gem.summary = "Web page speed optimizations at the Rack level - fork"
   gem.description = "Web page speed optimizations at the Rack level - fork"
