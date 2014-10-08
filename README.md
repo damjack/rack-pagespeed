@@ -1,7 +1,3 @@
-# rack-pagespeed
+# rack-pagespeed-fork
 
-Please refer to [the instructions manual](http://rack-pagespeed.heroku.com) for details. GitHub ain't stylish enough.
-
-# License
-
-It's as free as sneezing. Just [give me credit](http://twitter.com/julio_ody) if you make some extraordinary out of this.
+This is a fork of [rack-pagespeed](https://github.com/juliocesar/rack-pagespeed).

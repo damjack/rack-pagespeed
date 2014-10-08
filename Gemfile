@@ -1,19 +1,20 @@
-source :rubygems
+source 'https://rubygems.org'
 
-# Include all the gems from the Gemspec
-gemspec
+group :development do
+  gem "bundler", "~> 1.0"
+  gem "jeweler", "~> 2.0.1"
+end
 
-gem 'rack'    # Just let it work with latest. If the API breaks, I'll fix it
 gem 'nokogiri'
 gem 'jsmin'
-
-# Required for development
-gem 'rake'
-gem 'jeweler'
+gem 'mime-types'
 
 group :test do
-  gem 'rspec',    '2.6.0'
   gem 'capybara', '1.0.0'
   gem 'redis'
-  gem 'memcached'
+  # gem 'memcached'
+end
+
+group :development, :test do
+  gem 'rspec',    '2.6.0'
 end
