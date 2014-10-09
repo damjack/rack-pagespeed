@@ -45,18 +45,46 @@ module Rack::PageSpeed::Filters
     end
 
     private
-    def file_for node
-      path = case node.name
-      when 'script'
-        node['src']
-      when 'img'
-        node['src']        
-      when 'link'
-        node['href']
+    # Asset is not local if it has either a scheme (e.g. 'http:') or a host (e.g. '//google.com/')
+    def is_local? path
+      uri = URI.parse(path)
+      uri.scheme.nil? && uri.host.nil?
+      rescue URI::BadURIError
+        false
+      rescue URI::InvalidURIError
+        false
+    end
+
+    def content? node
+      content_for(node)[0] == 200
+    end
+
+    def content_only node
+      status, headers, body = content_for(node)
+      return nil if status != 200
+      full_body = ""; body.each do |part| full_body << part end
+      full_body
+    end
+
+    def path_for node
+      case node.name
+        when 'script'
+          node['src']
+        when 'img'
+          node['src']
+        when 'link'
+          node['href']
       end
-      return false unless path
-      path = ::File.join(options[:public], URI.parse(path).path)
-      ::File.open path if ::File.exists? path      
+    end
+
+    # Retrieve the referenced asset through the Rack application
+    def content_for node
+      path = path_for node
+      return [404, {}, ""] unless path && is_local?(path)
+      app = options[:app]
+      env = options[:env].dup
+      env['PATH_INFO'] = path
+      app.call(env)
     end
   end
   # shortcut

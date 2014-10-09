@@ -22,7 +22,7 @@ class Rack::PageSpeed::Filters::CombineCSS < Rack::PageSpeed::Filter
 
   private
   def merge_contents nodes, separator = ';'
-    nodes.map { |node| file_for(node).read rescue "" }.join("\n")
+    nodes.map { |node| content_only(node) rescue "" }.join("\n")
   end
   
   def save nodes
@@ -32,7 +32,7 @@ class Rack::PageSpeed::Filters::CombineCSS < Rack::PageSpeed::Filter
   end
   
   def local_css? node
-    node.name == 'link' and file_for(node)
+    node.name == 'link' and content_for(node)[0] == 200
   end
   
   def topmost_of_sequence nodes
@@ -57,9 +57,10 @@ class Rack::PageSpeed::Filters::CombineCSS < Rack::PageSpeed::Filter
 
   def unique_id nodes
     return Digest::MD5.hexdigest nodes.map { |node| 
-      file = file_for node
-      next unless file
-      file.mtime.to_i.to_s + file.read
+      status, headers, body = content_for node
+      next unless status == 200
+      full_body = ""; body.each do |part| full_body << part end
+      headers['Last-Modified'] + full_body
     }.join unless @options[:hash]
     @options[:hash].each do |urls, hash|
       next unless (nodes.map { |node| node['href'] } & urls).length == urls.length

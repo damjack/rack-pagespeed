@@ -9,7 +9,7 @@ module Rack
 
     def initialize app, options, &block
       @app = app
-      @config = Config.new options, &block
+      @config = Config.new options.merge(app: app), &block
     end
 
     def call env
@@ -21,11 +21,12 @@ module Rack
         body = ""; @response.each do |part| body << part end
         @document = Nokogiri::HTML(body)
         @config.filters.each do |filter|
+          filter.options[:env] = env
           filter.execute! @document
         end
         body = @document.to_html
         headers['Content-Length'] = body.length.to_s if headers['Content-Length'] # still UTF-8 unsafe
-        [status, headers, [body]]        
+        [status, headers, [body]]
       end
     end
     
@@ -35,6 +36,7 @@ module Rack
         [
           200,
           {
+            'Last-Modified' => store.mtime(asset_id).httpdate,
             'Content-Length' => asset.length,
             'Content-Type' => (Rack::Mime.mime_type(::File.extname(asset_id))),
             'Cache-Control' => "public, max-age=#{(60*60*24*365.25*10).to_i}",

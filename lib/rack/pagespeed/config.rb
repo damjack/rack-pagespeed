@@ -3,11 +3,10 @@ class Rack::PageSpeed::Config
   class NoSuchStorageMechanism < StandardError; end
   load "#{::File.dirname(__FILE__)}/store/disk.rb"
 
-  attr_reader :filters, :public
+  attr_reader :filters, :app
 
   def initialize options = {}, &block
-    @filters, @options, @public = [], options, options[:public]
-    raise ArgumentError, ":public needs to be a directory" unless File.directory? @public.to_s
+    @filters, @options, @app = [], options, options[:app]
     filters_to_methods
     enable_filters_from_options
     enable_store_from_options
@@ -61,7 +60,7 @@ class Rack::PageSpeed::Config
   def filters_to_methods
     Rack::PageSpeed::Filter.available_filters.each do |klass|
       (class << self; self; end).send :define_method, klass.name do |*options|
-        default_options = {:public => @options[:public], :store => @store}
+        default_options = {:app => @options[:app], :store => @store}
         instance = klass.new(options.any? ? default_options.merge(*options) : default_options)
         @filters << instance if instance and !@filters.select { |k| k.is_a? instance.class }.any?
       end

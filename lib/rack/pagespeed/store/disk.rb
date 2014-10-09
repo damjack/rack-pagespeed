@@ -8,6 +8,12 @@ class Rack::PageSpeed::Store::Disk
     @path = path
   end
 
+  # Retrieve last modified time from Disk asset
+  def mtime key
+    path = "#{@path}/rack-pagespeed-#{key}"
+    File.mtime path if File.exists? path
+  end
+
   def [] key
     path = "#{@path}/rack-pagespeed-#{key}"
     File.read path if File.exists? path

@@ -21,10 +21,10 @@ class Rack::PageSpeed::Filters::MinifyJavaScripts < Rack::PageSpeed::Filters::Ba
           store = @options[:store]
           store[match[1]] = JSMin.minify store[match[1]]
         else
-          next unless local_script? node
-          file = file_for node
-          javascript = file.read
-          hash = Digest::MD5.hexdigest file.mtime.to_i.to_s + javascript
+          status, headers, body = content_for node
+          next unless node.name == 'script' && status == 200
+          javascript = ""; body.each do |part| javascript << part end
+          hash = Digest::MD5.hexdigest headers['Last-Modified'] + javascript
           compressed = Nokogiri::XML::Node.new 'script', document
           compressed['src'] = "/rack-pagespeed-#{hash}.js"
           @options[:store]["#{hash}.js"] = JSMin.minify javascript
@@ -33,9 +33,5 @@ class Rack::PageSpeed::Filters::MinifyJavaScripts < Rack::PageSpeed::Filters::Ba
         end        
       end
     end
-  end
-  
-  def local_script? node
-    node.name == 'script' and file_for(node)
   end
 end

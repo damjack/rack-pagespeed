@@ -7,7 +7,7 @@ end
 class Rack::PageSpeed::Filters::CombineJavaScripts < Rack::PageSpeed::Filter
   requires_store
   name      'combine_javascripts'
-  priority  8
+  priority  10
   
   def execute! document
     nodes = document.css('script[src]')
@@ -23,7 +23,7 @@ class Rack::PageSpeed::Filters::CombineJavaScripts < Rack::PageSpeed::Filter
 
   private
   def save nodes
-    contents = nodes.map { |node| file_for(node).read rescue "" }.join(';')
+    contents = nodes.map { |node| content_only(node) rescue "" }.join(';')
     nodes_id = unique_id nodes
     @options[:store]["#{nodes_id}.js"] = contents
   end
@@ -36,7 +36,7 @@ class Rack::PageSpeed::Filters::CombineJavaScripts < Rack::PageSpeed::Filter
   end
   
   def local_script? node
-    node.name == 'script' and file_for(node)
+    node.name == 'script' and content?(node)
   end
   
   def topmost_of_sequence nodes
@@ -44,7 +44,7 @@ class Rack::PageSpeed::Filters::CombineJavaScripts < Rack::PageSpeed::Filter
     nodes.each do |node|
       _previous, _next = node.previous_sibling, node.next_sibling
       if _previous && local_script?(_previous) &&
-        (!_next || !file_for(_next))
+        (!_next || !local_script?(_next))
         result << node
       end
     end
@@ -52,10 +52,11 @@ class Rack::PageSpeed::Filters::CombineJavaScripts < Rack::PageSpeed::Filter
   end
 
   def unique_id nodes
-    return Digest::MD5.hexdigest nodes.map { |node| 
-      file = file_for node
-      next unless file
-      file.mtime.to_i.to_s + file.read
+    return Digest::MD5.hexdigest nodes.map { |node|
+      status, headers, body = content_for node
+      next unless status == 200
+      full_body = ""; body.each do |part| full_body << part end
+      headers['Last-Modified'] + full_body
     }.join unless @options[:hash]
     @options[:hash].each do |urls, hash|
       next unless (nodes.map { |node| node['src'] } & urls).length == urls.length

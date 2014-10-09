@@ -5,10 +5,12 @@ class Rack::PageSpeed::Filters::InlineImages < Rack::PageSpeed::Filter
     nodes = document.css('img')
     return false unless nodes.count > 0
     nodes.each do |node|
-      file = file_for node
-      next if !file or file.stat.size > (@options[:max_size] or 1024)
+      status, headers, body = content_for node
+      next if status != 200 or headers['Content-Length'].to_i > (@options[:max_size] or 1024)
+      url = node['src']
       img = node.clone
-      img['src'] = "data:#{Rack::Mime.mime_type(File.extname(file.path))};base64,#{[file.read].pack('m')}"
+      full_body = ""; body.each do |part| full_body << part end
+      img['src'] = "data:#{Rack::Mime.mime_type(File.extname(path_for(node)))};base64,#{[full_body].pack('m')}"
       img['alt'] = node['alt'] if node['alt']
       node.before img
       node.remove
